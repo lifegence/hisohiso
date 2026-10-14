@@ -3,6 +3,8 @@
 **Sound masking for office speech privacy** — keep conversations from being understood in the next room.
 A browser app (PWA) that runs on smartphones and PCs. No install, no server, no data leaves the device.
 
+**Try it: https://lifegence.github.io/hisohiso/**
+
 [日本語は下にあります](#日本語)
 
 ## Features
@@ -57,6 +59,8 @@ The microphone (leak measurement) requires **HTTPS**. To try it on a phone, put 
 
 **Hisohiso（ひそひそ）— 会話マスカー**
 オフィスの会話を、隣室や通路から聞き取られにくくするアプリです。ブラウザで動くアプリ（PWA）なので、スマホでもPCでもインストールせずに使えます。サーバーは不要で、データが端末の外に出ることもありません。
+
+**すぐ試す: https://lifegence.github.io/hisohiso/**
 
 ### できること
 
