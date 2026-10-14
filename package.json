@@ -5,7 +5,7 @@
   "private": true,
   "type": "module",
   "license": "MIT",
-  "author": "Masakazu Nomura",
+  "author": "Lifegence Corporation",
   "keywords": ["sound-masking", "speech-privacy", "office-privacy", "web-audio", "pwa"],
   "scripts": {
     "start": "python3 -m http.server 8000",
