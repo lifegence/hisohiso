@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Hisohiso</title>
+  <meta name="description" content="Hisohiso — オフィスの会話を隣室から聞き取られにくくするマスキング音生成・遮音測定アプリ">
+  <meta name="theme-color" content="#1d2733">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icon.svg">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>Hisohiso <span class="subtitle">会話マスカー</span></h1>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="mask" aria-selected="true">マスキング</button>
+      <button role="tab" data-tab="measure" aria-selected="false">漏れ測定</button>
+      <button role="tab" data-tab="help" aria-selected="false">使い方</button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- ───────── マスキング ───────── -->
+    <section id="tab-mask" role="tabpanel">
+      <div class="card play-card">
+        <button id="play" class="play" aria-pressed="false">
+          <span class="play-icon" aria-hidden="true"></span>
+          <span id="play-label">再生</span>
+        </button>
+        <div class="play-side">
+          <div id="status" class="status">停止中</div>
+          <div class="meter" aria-hidden="true"><div id="meter-bar"></div></div>
+          <label class="inline">
+            自動停止
+            <select id="timer">
+              <option value="0">しない</option>
+              <option value="30">30分後</option>
+              <option value="60">60分後</option>
+              <option value="90">90分後</option>
+              <option value="120">120分後</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>全体</h2>
+        <label class="slider">
+          <span>音量</span>
+          <input type="range" min="0" max="100" data-setting="master">
+          <output data-for="master"></output>
+        </label>
+      </div>
+
+      <div class="card">
+        <h2>音声帯域ノイズ</h2>
+        <p class="note">会話と同じ周波数帯を覆う「サー」という音。壁越しに漏れる声に効きます。</p>
+        <label class="slider">
+          <span>音量</span>
+          <input type="range" min="0" max="100" data-setting="noise">
+          <output data-for="noise"></output>
+        </label>
+        <label class="slider">
+          <span>高音を抑える</span>
+          <input type="range" min="-18" max="0" step="1" data-setting="tilt">
+          <output data-for="tilt"></output>
+        </label>
+      </div>
+
+      <div class="card">
+        <h2>擬似会話（情報マスキング）</h2>
+        <p class="note">意味のない声を合成して重ねます。言葉として聞き取るのを邪魔するので、小さい音でも効きます。</p>
+        <label class="slider">
+          <span>音量</span>
+          <input type="range" min="0" max="100" data-setting="babble">
+          <output data-for="babble"></output>
+        </label>
+        <label class="slider">
+          <span>話者数</span>
+          <input type="range" min="2" max="8" step="1" data-setting="voices">
+          <output data-for="voices"></output>
+        </label>
+      </div>
+
+      <div class="card">
+        <h2>環境音</h2>
+        <p class="note">マスキング音の耳障りさを和らげます。</p>
+        <label class="inline">
+          種類
+          <select data-setting="ambient">
+            <option value="stream">せせらぎ</option>
+            <option value="hvac">空調</option>
+            <option value="none">なし</option>
+          </select>
+        </label>
+        <label class="slider">
+          <span>音量</span>
+          <input type="range" min="0" max="100" data-setting="ambientVol">
+          <output data-for="ambientVol"></output>
+        </label>
+      </div>
+
+      <p class="hint">置き場所：<strong>聞かれたくない側</strong>（ドアの外・通路・隣室との壁ぎわ）に置き、外部スピーカーにつなぐと効果が大きくなります。</p>
+    </section>
+
+    <!-- ───────── 漏れ測定 ───────── -->
+    <section id="tab-measure" role="tabpanel" hidden>
+      <div class="card">
+        <h2>測定のしかた</h2>
+        <p class="note">端末を2台使います。<strong>端末A</strong>は試験音を鳴らし、<strong>端末B</strong>はマイクで測ります。下の手順を上から順に進めてください。測定中は話したり物音を立てたりしないでください（手順1を除く）。</p>
+      </div>
+
+      <div class="card">
+        <h2>端末A：試験音</h2>
+        <div class="row">
+          <button id="test-toggle" class="btn" aria-pressed="false">試験音を鳴らす</button>
+          <label class="slider grow">
+            <span>音量</span>
+            <input type="range" min="0" max="100" id="test-vol">
+            <output id="test-vol-out"></output>
+          </label>
+        </div>
+        <p class="note">大きいほど正確に測れます。低い音を測るには外部スピーカーの使用をおすすめします。</p>
+      </div>
+
+      <div class="card">
+        <h2>端末B：測定</h2>
+        <ol id="steps" class="steps"></ol>
+        <button id="measure-reset" class="btn ghost">測定結果をすべて消す</button>
+      </div>
+
+      <div id="results" class="card" hidden></div>
+    </section>
+
+    <!-- ───────── 使い方 ───────── -->
+    <section id="tab-help" role="tabpanel" hidden>
+      <div class="card prose">
+        <h2>しくみ</h2>
+        <p>会話が隣室に漏れていても、周りに適度な音があれば言葉として聞き取れなくなります（マスキング効果）。このアプリは次の3種類の音を組み合わせて鳴らします。</p>
+        <ul>
+          <li><strong>音声帯域ノイズ</strong>：会話と同じ周波数の音で声を覆い隠す</li>
+          <li><strong>擬似会話</strong>：意味のない声で、脳が言葉を拾うのを邪魔する（情報マスキング）</li>
+          <li><strong>環境音</strong>：聞き心地を良くする</li>
+        </ul>
+
+        <h2>効果を高めるコツ</h2>
+        <ul>
+          <li>鳴らすのは<strong>聞く人の側</strong>です。会議室の中で大きな音を鳴らしても、話している人が声を張るだけで逆効果になります。</li>
+          <li>壁を通った声は低い音が中心です。スマホ本体のスピーカーは低音が出ないので、Bluetoothスピーカーなどにつないでください。</li>
+          <li>ドアの下の隙間や空調ダクトからの漏れは、マスキングより先にふさぐのが効果的です。</li>
+          <li>音量は「隣室の人が気にならない範囲で最大」が目安です。「漏れ測定」で、どのくらい上げればよいかを確認できます。</li>
+        </ul>
+
+        <h2>測定結果の見かた</h2>
+        <ul>
+          <li><strong>プライバシー指数（PI）</strong>：0〜100。95以上で機密レベル、80以上で通常のプライバシーとされます（ASTM E1130の考え方）。</li>
+          <li>マイクは校正されていないので、表の値は相対値（dB）です。同じ端末で測った値どうしの差は有効です。</li>
+          <li>この結果はあくまで目安です。最終的には、実際に隣室で聞き取れるかを人の耳で確かめてください。</li>
+        </ul>
+
+        <h2>注意</h2>
+        <ul>
+          <li>iPhoneでは画面をロックすると音が止まることがあります。再生中は画面がつきっぱなしになるよう設定しています。</li>
+          <li>マイクを使う測定は、HTTPS（または localhost）で開いたときだけ動きます。</li>
+          <li>周りの人の聴覚と集中を損なわない音量で使ってください。</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

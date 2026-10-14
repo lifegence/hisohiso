@@ -1,0 +1,14 @@
+{
+  "name": "hisohiso",
+  "version": "0.1.0",
+  "description": "Sound masking app for office speech privacy",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "author": "Masakazu Nomura",
+  "keywords": ["sound-masking", "speech-privacy", "office-privacy", "web-audio", "pwa"],
+  "scripts": {
+    "start": "python3 -m http.server 8000",
+    "test": "node --test test/*.test.mjs"
+  }
+}
