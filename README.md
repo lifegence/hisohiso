@@ -5,6 +5,9 @@ A browser app (PWA) that runs on smartphones and PCs. No install, no server, no 
 
 **Try it: https://lifegence.github.io/hisohiso/**
 
+> [!IMPORTANT]
+> **iPhone / iPad:** turn **off** the silent switch (Ring/Silent). While it is on, iOS mutes the masking sound in both Safari and Chrome.
+
 [日本語は下にあります](#日本語)
 
 ## Features
@@ -36,7 +39,7 @@ The microphone (leak measurement) requires **HTTPS**. To try it on a phone, put 
 
 ## Limitations
 
-- On iOS, audio may stop when the screen is locked.
+- On iOS, no sound plays while the silent switch is on, and audio may stop when the screen is locked.
 - The microphone is uncalibrated, so all levels are relative dB. Differences between measurements on the same device are still valid.
 - The SII is a simplified version of the ANSI S3.5 octave-band method. Treat the results as a guide and confirm by listening.
 
@@ -61,6 +64,9 @@ The microphone (leak measurement) requires **HTTPS**. To try it on a phone, put 
 オフィスの会話を、隣室や通路から聞き取られにくくするアプリです。ブラウザで動くアプリ（PWA）なので、スマホでもPCでもインストールせずに使えます。サーバーは不要で、データが端末の外に出ることもありません。
 
 **すぐ試す: https://lifegence.github.io/hisohiso/**
+
+> [!IMPORTANT]
+> **iPhone / iPad をお使いの方へ：** 消音スイッチ（マナーモード）を**オフ**にしてください。オンのままだと、Safari でも Chrome でも音が出ません。
 
 ### できること
 
@@ -91,7 +97,7 @@ npm test    # 計算ロジックのテスト
 
 ### 制約
 
-- iPhoneでは画面をロックすると音が止まることがあります。
+- iPhoneでは、消音スイッチがオンだと音が出ません。また、画面をロックすると音が止まることがあります。
 - マイクは校正していないので、値はすべて相対値（dB）です。同じ端末で測った値どうしの差は有効です。
 - 結果は目安です。最終的には、実際に人の耳で聞き取れるかを確かめてください。
 
