@@ -1,6 +1,7 @@
 import { MaskingEngine, DEFAULTS } from './audio-engine.js';
 import { BandMeter, TestSignal } from './measure.js';
 import { BANDS, analyze, verdict } from './privacy.js';
+import { setAudioSession } from './audio-session.js';
 
 const $ = (sel) => document.querySelector(sel);
 const $$ = (sel) => document.querySelectorAll(sel);
@@ -49,7 +50,9 @@ async function keepAwake(on) {
 }
 // タブを離れると解除されるので、戻ったときに取り直す
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && (engine.running || testSignal.running)) keepAwake(true);
+  if (document.visibilityState !== 'visible') return;
+  if (engine.running || testSignal.running) keepAwake(true);
+  engine.resume().catch(() => {}); // 着信などで iOS に止められていたら再開を試みる
 });
 
 // ───────── マスキング ─────────
@@ -87,7 +90,13 @@ function setPlaying(on) {
 }
 
 async function startMasking() {
-  await engine.start();
+  setAudioSession('playback');
+  try {
+    await engine.start();
+  } catch (err) {
+    $('#status').textContent = `再生できませんでした：${err.message}`;
+    return;
+  }
   const minutes = Number(timerSel.value);
   stopAt = minutes ? Date.now() + minutes * 60_000 : 0;
   setPlaying(true);
@@ -99,7 +108,12 @@ async function stopMasking() {
   await engine.stop();
 }
 
-playBtn.addEventListener('click', () => (engine.running ? stopMasking() : startMasking()));
+playBtn.addEventListener('click', () => {
+  if (!engine.running) return startMasking();
+  // iOS に止められている(interrupted 等)ときは、停止ではなく再開する
+  if (engine.state !== 'running') return engine.resume();
+  return stopMasking();
+});
 
 timerSel.addEventListener('change', () => {
   const minutes = Number(timerSel.value);
@@ -123,6 +137,9 @@ function updateMeter() {
     }
   } else {
     $('#status').textContent = '再生中';
+  }
+  if (engine.state !== 'running') {
+    $('#status').textContent = `音が止まっています（${engine.state}）。再生ボタンで再開します`;
   }
   requestAnimationFrame(updateMeter);
 }
@@ -149,7 +166,12 @@ testBtn.addEventListener('click', async () => {
   if (testSignal.running) {
     testSignal.stop();
   } else {
-    await testSignal.start(Number(testVol.value));
+    setAudioSession('playback');
+    try {
+      await testSignal.start(Number(testVol.value));
+    } catch (err) {
+      alert(`試験音を鳴らせませんでした：${err.message}`);
+    }
   }
   testBtn.setAttribute('aria-pressed', String(testSignal.running));
   testBtn.textContent = testSignal.running ? '試験音を止める' : '試験音を鳴らす';
@@ -232,6 +254,7 @@ async function runStep(step, btn, value, progress) {
   busy = true;
   $$('#steps button').forEach((b) => (b.disabled = true));
   progress.hidden = false;
+  setAudioSession('play-and-record');
   try {
     const levels = await meter.measure(step.secs, (p, db) => {
       progress.value = p;

@@ -1,6 +1,6 @@
 // アプリ本体をキャッシュしてオフラインでも起動できるようにする。
 // 試作中に古いファイルが残らないよう、ネットワーク優先・失敗時のみキャッシュを使う。
-const VERSION = 'hisohiso-v1';
+const VERSION = 'hisohiso-v2';
 const FILES = [
   './',
   'index.html',
@@ -11,6 +11,7 @@ const FILES = [
   'js/audio-engine.js',
   'js/measure.js',
   'js/privacy.js',
+  'js/audio-session.js',
 ];
 
 self.addEventListener('install', (e) => {

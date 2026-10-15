@@ -205,18 +205,23 @@ export class MaskingEngine {
     return this.nodes !== null;
   }
 
+  /** AudioContext の状態('running' / 'suspended' / iOS の 'interrupted' など)。未生成なら null。 */
+  get state() {
+    return this.ctx?.state ?? null;
+  }
+
   async start() {
     if (this.nodes) return;
-    if (!this.ctx) {
-      this.ctx = new AudioContext({ latencyHint: 'playback' });
-      this.buffers = {
-        pink: loopBuffer(this.ctx, 20, pinkGen),
-        brown: loopBuffer(this.ctx, 20, brownGen),
-        white: loopBuffer(this.ctx, 2, whiteGen),
-      };
-    }
+    if (!this.ctx) this.ctx = new AudioContext({ latencyHint: 'playback' });
     const ctx = this.ctx;
-    await ctx.resume();
+    // iOS は操作の直後でないと音を出す許可が下りないので、重い処理より先に resume を呼ぶ
+    const resumed = ctx.resume();
+    this.buffers ??= {
+      pink: loopBuffer(ctx, 20, pinkGen),
+      brown: loopBuffer(ctx, 20, brownGen),
+      white: loopBuffer(ctx, 2, whiteGen),
+    };
+    await resumed;
 
     const n = (this.nodes = { sources: [], voices: [] });
     n.master = gainNode(ctx, 0);
@@ -237,6 +242,11 @@ export class MaskingEngine {
     n.master.gain.setTargetAtTime(sliderToGain(this.settings.master), ctx.currentTime, 0.6);
     this.timer = setInterval(() => this.#tick(), 200);
     this.#tick();
+  }
+
+  /** 電話の着信などで止められた音を再開する */
+  async resume() {
+    if (this.nodes && this.ctx.state !== 'running') await this.ctx.resume();
   }
 
   async stop() {

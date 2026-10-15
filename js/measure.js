@@ -74,13 +74,15 @@ export class TestSignal {
 
   async start(volume) {
     if (this.src) return;
-    if (!this.ctx) {
-      this.ctx = new AudioContext();
+    this.ctx ??= new AudioContext();
+    // iOS は操作の直後でないと音を出す許可が下りないので、重い処理より先に resume を呼ぶ
+    const resumed = this.ctx.resume();
+    if (!this.buffer) {
       this.buffer = loopBuffer(this.ctx, 10, pinkGen);
       this.gain = this.ctx.createGain();
       this.gain.connect(this.ctx.destination);
     }
-    await this.ctx.resume();
+    await resumed;
     this.gain.gain.value = sliderToGain(volume);
     this.src = this.ctx.createBufferSource();
     this.src.buffer = this.buffer;
